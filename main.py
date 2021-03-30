@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, flash, abort
+from flask import Flask, render_template, redirect, url_for, flash, abort, request
 from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
 from datetime import date
@@ -9,7 +9,12 @@ from sqlalchemy.orm import relationship
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
 from forms import LoginForm, RegisterForm, CreatePostForm, CommentForm
 from flask_gravatar import Gravatar
+import smtplib
 import os
+
+FROM_EMAIL = os.environ.get("FROM_EMAIL")
+FROM_PASS = os.environ.get("FROM_PASS")
+TO_EMAIL = os.environ.get("TO_EMAIL")
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY")
@@ -164,9 +169,25 @@ def about():
     return render_template("about.html", current_user=current_user)
 
 
-@app.route("/contact")
+@app.route('/contact', methods=["POST", "GET"])
 def contact():
-    return render_template("contact.html", current_user=current_user)
+    if request.method == "POST":
+        name = request.form["name"]
+        email = request.form["email"]
+        phone = request.form["phone"]
+        message = request.form["message"]
+        with smtplib.SMTP("smtp.gmail.com") as connection:
+            connection.starttls()
+            connection.login(user=FROM_EMAIL, password=FROM_PASS)
+            connection.sendmail(
+                from_addr=FROM_EMAIL,
+                to_addrs=TO_EMAIL,
+                msg=f"Subject: New Message\n\nName: {name}\nEmail: {email}\nPhone number: {phone}\n\nMessage: {message}"
+                    .encode("utf-8")
+            )
+        return render_template("contact.html", completed=True, current_user=current_user)
+    else:
+        return render_template("contact.html", completed=False, current_user=current_user)
 
 
 @app.route("/new-post", methods=["GET", "POST"])
@@ -187,8 +208,6 @@ def add_new_post():
         return redirect(url_for("get_all_posts"))
 
     return render_template("make-post.html", form=form, current_user=current_user)
-
-
 
 
 @app.route("/edit-post/<int:post_id>", methods=["GET", "POST"])
