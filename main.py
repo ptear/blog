@@ -74,11 +74,11 @@ class Comment(db.Model):
 class TDList(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     task = db.Column(db.String(500), nullable=False)
-    date_due = db.Column(db.String(250), nullable=False)
+    date_due = db.Column(db.DateTime, nullable=False)
     completed = db.Column(db.Boolean, nullable=False)
 
 
-# db.create_all()
+db.create_all()
 
 
 def admin_only(f):
@@ -257,7 +257,7 @@ def func(e):
 @app.route("/todo")
 @admin_only
 def todo():
-    td_list = TDList.query.order_by(TDList.date_due.desc()).all()
+    td_list = TDList.query.order_by(TDList.date.desc()).all()
     return render_template("todo.html", td_list=td_list)
 
 
@@ -267,10 +267,10 @@ def add_todo():
     form = TaskForm()
     if form.validate_on_submit():
         dt_date = dateutil.parser.parse(form.date_due.data)
-        str_date = dt_date.strftime("%d/%m/%Y")
+        # str_date = dt_date.strftime("%d/%m/%Y")
         new_task = TDList(
             task=form.task.data,
-            date_due=str_date,
+            date_due=dt_date,
             completed=form.completed.data
         )
         db.session.add(new_task)
@@ -289,9 +289,9 @@ def edit_todo(task_id):
     )
     if form.validate_on_submit():
         dt_date = dateutil.parser.parse(form.date_due.data)
-        str_date = dt_date.strftime("%d/%m/%Y")
+        # str_date = dt_date.strftime("%d/%m/%Y")
         task_to_edit.task = form.task.data
-        task_to_edit.date_due = str_date
+        task_to_edit.date_due = dt_date
         task_to_edit.completed = form.completed.data
         db.session.commit()
         return redirect(url_for("todo"))
