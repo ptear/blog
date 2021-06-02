@@ -257,12 +257,7 @@ def func(e):
 @app.route("/todo")
 @admin_only
 def todo():
-    td_list = TDList.query.all()
-    for item in td_list:
-        item.date_due = dateutil.parser.parse(item.date_due)
-    td_list.sort(key=func)
-    for item in td_list:
-        item.date_due = item.date_due.strftime("%d/%m/%Y")
+    td_list = TDList.query.order_by(TDList.date_due.desc()).all()
     return render_template("todo.html", td_list=td_list)
 
 
