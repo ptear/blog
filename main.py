@@ -71,10 +71,11 @@ class Comment(db.Model):
     text = db.Column(db.Text, nullable=False)
 
 
-class TDList(db.Model):
+class TDList3(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     task = db.Column(db.String(500), nullable=False)
     date_due = db.Column(db.DateTime, nullable=False)
+    date_due_str = db.Column(db.String(500), nullable=False)
     completed = db.Column(db.Boolean, nullable=False)
 
 
@@ -257,7 +258,7 @@ def func(e):
 @app.route("/todo")
 @admin_only
 def todo():
-    td_list = TDList.query.order_by(TDList.date.desc()).all()
+    td_list = TDList3.query.order_by(TDList3.date_due.asc()).all()
     return render_template("todo.html", td_list=td_list)
 
 
@@ -267,10 +268,14 @@ def add_todo():
     form = TaskForm()
     if form.validate_on_submit():
         dt_date = dateutil.parser.parse(form.date_due.data)
-        # str_date = dt_date.strftime("%d/%m/%Y")
-        new_task = TDList(
+        if dt_date.hour == 0 and dt_date.minute == 0:
+            str_date = dt_date.strftime("%d/%m/%Y")
+        else:
+            str_date = dt_date.strftime("%H:%M on %d/%m/%Y")
+        new_task = TDList3(
             task=form.task.data,
             date_due=dt_date,
+            date_due_str=str_date,
             completed=form.completed.data
         )
         db.session.add(new_task)
@@ -282,16 +287,20 @@ def add_todo():
 @app.route("/edit-td/<int:task_id>", methods=["GET", "POST"])
 @admin_only
 def edit_todo(task_id):
-    task_to_edit = TDList.query.get(task_id)
+    task_to_edit = TDList3.query.get(task_id)
     form = TaskForm(
         task=task_to_edit.task,
         date_due=task_to_edit.date_due
     )
     if form.validate_on_submit():
         dt_date = dateutil.parser.parse(form.date_due.data)
-        # str_date = dt_date.strftime("%d/%m/%Y")
+        if dt_date.hour == 0 and dt_date.minute == 0:
+            str_date = dt_date.strftime("%d/%m/%Y")
+        else:
+            str_date = dt_date.strftime("%H:%M on %d/%m/%Y")
         task_to_edit.task = form.task.data
         task_to_edit.date_due = dt_date
+        task_to_edit.date_due_str = str_date
         task_to_edit.completed = form.completed.data
         db.session.commit()
         return redirect(url_for("todo"))
@@ -301,7 +310,7 @@ def edit_todo(task_id):
 @app.route("/delete-td/<int:task_id>")
 @admin_only
 def delete_todo(task_id):
-    task_to_delete = TDList.query.get(task_id)
+    task_to_delete = TDList3.query.get(task_id)
     db.session.delete(task_to_delete)
     db.session.commit()
     return redirect(url_for('todo'))

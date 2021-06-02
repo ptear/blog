@@ -38,7 +38,7 @@
                 {% endif %}
                 <th scope="row">{{ todo.id }}</th>
                 <td>{{ todo.task }}</td>
-                <td>{{ todo.date_due }}</td>
+                <td>{{ todo.date_due_str }}</td>
                 <td><a href="{{ url_for('edit_todo', task_id=todo.id) }}">Edit</a></td>
                 <td><a href="{{ url_for('delete_todo', task_id=todo.id) }}">✘</a></td>
             </tr>
