@@ -78,7 +78,7 @@ class TDList(db.Model):
     completed = db.Column(db.Boolean, nullable=False)
 
 
-db.create_all()
+# db.create_all()
 
 
 def admin_only(f):
