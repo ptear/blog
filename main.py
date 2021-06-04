@@ -322,8 +322,9 @@ def delete_todo(task_id):
 @app.route('/sports-players', methods=['GET', 'POST'])
 def sports_players():
 
-    temp = pathlib.PosixPath
-    pathlib.PosixPath = pathlib.WindowsPath
+    plat = platform.system()
+    if plat == 'Windows':
+        pathlib.PosixPath = pathlib.WindowsPath
 
     learner_path = Path()
 
