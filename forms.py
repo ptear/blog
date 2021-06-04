@@ -1,4 +1,5 @@
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField
 from wtforms import StringField, SubmitField, PasswordField, BooleanField
 from wtforms.validators import DataRequired, URL
 from flask_ckeditor import CKEditorField
@@ -36,3 +37,8 @@ class TaskForm(FlaskForm):
     date_due = StringField("Date", validators=[DataRequired()])
     completed = BooleanField("Completed?")
     submit = SubmitField("Add / Edit")
+
+
+class UploadForm(FlaskForm):
+    file = FileField()
+    submit = SubmitField('Submit')

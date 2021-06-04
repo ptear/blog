@@ -6,11 +6,14 @@ import datetime
 import dateutil.parser
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
-from forms import LoginForm, RegisterForm, CreatePostForm, CommentForm, TaskForm
+from forms import LoginForm, RegisterForm, CreatePostForm, CommentForm, TaskForm, UploadForm
 from flask_gravatar import Gravatar
+from fastai.vision.all import *
+import pathlib
 import smtplib
 import os
 
@@ -314,6 +317,34 @@ def delete_todo(task_id):
     db.session.delete(task_to_delete)
     db.session.commit()
     return redirect(url_for('todo'))
+
+
+@app.route('/sports-players', methods=['GET', 'POST'])
+def sports_players():
+
+    temp = pathlib.PosixPath
+    pathlib.PosixPath = pathlib.WindowsPath
+
+    learner_path = Path()
+
+    learn = load_learner(learner_path / 'export.pkl')
+
+    form = UploadForm()
+
+    direct = 'static/uploads'
+    for file in os.scandir(direct):
+        os.remove(file.path)
+
+    if form.validate_on_submit():
+        filename = secure_filename(form.file.data.filename)
+        form.file.data.save(f'static/uploads/{filename}')
+        img = PILImage.create(f'static/uploads/{filename}')
+        pred_class, pred_idx, outputs = learn.predict(img)
+        flash(f'This picture is of a {pred_class} player', 'success')
+        flash(f"Probability: {outputs[pred_idx]:.04f}", 'info')
+        return render_template('sports-players.html', form=form, user_image=f"static/uploads/{filename}")
+
+    return render_template('sports-players.html', form=form, user_image="static/default_img/question.jpg")
 
 
 if __name__ == "__main__":
