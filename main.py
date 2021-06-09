@@ -262,7 +262,8 @@ def func(e):
 @admin_only
 def todo():
     td_list = TDList3.query.order_by(TDList3.date_due.asc()).all()
-    return render_template("todo.html", td_list=td_list)
+    now = datetime.now()
+    return render_template("todo.html", td_list=td_list, curr_date=now)
 
 
 @app.route("/add-td", methods=["GET", "POST"])

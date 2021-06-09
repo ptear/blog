@@ -31,10 +31,12 @@
             </thead>
             <tbody>
             {% for todo in td_list %}
-            {% if todo.completed %}
-            <tr class="table-success">
+                {% if todo.completed %}
+                <tr class="table-success">
+                {% elif todo.date_due < curr_date %}
+                <tr class="table-danger">
                 {% else %}
-            <tr class="table-warning">
+                <tr class="table-warning">
                 {% endif %}
                 <th scope="row">{{ todo.id }}</th>
                 <td>{{ todo.task }}</td>
